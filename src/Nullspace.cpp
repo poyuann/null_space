@@ -166,7 +166,7 @@ Eigen::VectorXd Nullspace::computeVel()
     q_p_dot = q_d_dot.segment(0,4);
     q_s_dot = q_d_dot.segment(4,5);
     v_r = pinvJ_s* q_s_dot + (I - pinvJ_s* J_s)* pinvJ_p* q_p_dot; 
-    v_r = pinvJ_p *q_p_dot + (I - pinvJ_p* J_p)* pinvJ_s* q_s_dot; 
+    // v_r = pinvJ_p *q_p_dot + (I - pinvJ_p* J_p)* pinvJ_s* q_s_dot; 
     // std::cout << pinvJ_s << "\n\n";
     return v_r.segment(mav_num* (ID-1),3);
 }   
@@ -230,7 +230,7 @@ Eigen::VectorXd Nullspace::center_nullspace()
 double Nullspace::computeDesiredYawVelocity()
 {   
 
-    double desired_yaw = atan2(Mavs_eigen[0].r(1) - Mavs_eigen[ID].r(1), Mavs_eigen[0].r(0) - Mavs_eigen[ID].r(0));
+    double desired_yaw = 0 ;//atan2(Mavs_eigen[0].r(1) - Mavs_eigen[ID].r(1), Mavs_eigen[0].r(0) - Mavs_eigen[ID].r(0));
     double error_yaw = desired_yaw - yaw;
     if(error_yaw>M_PI)
         error_yaw = error_yaw - 2*M_PI;
