@@ -14,7 +14,6 @@
 #include <Nullspace_control/desire.h>
 
 #include "Nullspace.h"
-#include "state_estimation/Mav.h"
 
 class CMD
 {
@@ -125,6 +124,17 @@ geometry_msgs::TwistStamped leader_vel;
 
 int start_all_drone = 0;
 
+struct MAV_eigen
+{
+	Eigen::Vector3d r;
+    Eigen::Vector3d r_c;
+	Eigen::Vector3d v;
+	Eigen::Vector3d a_imu;
+	Eigen::Vector3d omega_c;
+	Eigen::Matrix3d R_w2b;
+    Eigen::Quaterniond q;
+};
+
 class MAV
 {
 private:
@@ -181,9 +191,43 @@ void MAV::pose_cb(const geometry_msgs::PoseStamped::ConstPtr& msg)
         MAV_pose.pose.orientation.w);
     tf::Matrix3x3(Q).getRPY(roll,pitch,yaw);
 }
+MAV_eigen mavMsg2Eigen(MAV Mav)
+{
+	MAV_eigen Mav_eigen;
+    // std::cout << Mav.getPose().pose << std::endl;
+	Mav_eigen.r(0) = Mav.getPose().pose.position.x;
+	Mav_eigen.r(1) = Mav.getPose().pose.position.y;
+	Mav_eigen.r(2) = Mav.getPose().pose.position.z;
+	Mav_eigen.v(0) = Mav.getVel().twist.linear.x;
+	Mav_eigen.v(1) = Mav.getVel().twist.linear.y;
+	Mav_eigen.v(2) = Mav.getVel().twist.linear.z;
+	Mav_eigen.a_imu(0) = Mav.getAcc().x;
+	Mav_eigen.a_imu(1) = Mav.getAcc().y;
+	Mav_eigen.a_imu(2) = Mav.getAcc().z;
+	
+	Mav_eigen.omega_c(0) = Mav.getVel().twist.angular.x;
+	Mav_eigen.omega_c(1) = Mav.getVel().twist.angular.y;
+	Mav_eigen.omega_c(2) = Mav.getVel().twist.angular.z;
+	Mav_eigen.R_w2b = Eigen::Quaterniond(
+		Mav.getPose().pose.orientation.w,
+		Mav.getPose().pose.orientation.x,
+		Mav.getPose().pose.orientation.y,
+		Mav.getPose().pose.orientation.z
+	).toRotationMatrix().inverse();
+	Mav_eigen.q.w() = Mav.getPose().pose.orientation.w;
+	Mav_eigen.q.x() = Mav.getPose().pose.orientation.x;
+	Mav_eigen.q.y() = Mav.getPose().pose.orientation.y;
+	Mav_eigen.q.z() = Mav.getPose().pose.orientation.z;
+    
+    Mav_eigen.r_c = Mav_eigen.r + Mav_eigen.R_w2b*Mav.getCamera().t_B2C();
+	return Mav_eigen;
+}
 
 geometry_msgs::PoseStamped MAV::getPose(){return MAV_pose;}
 double MAV::getYaw(){return yaw;}
+
+
+
 
 void leader_vel_cb(const geometry_msgs::TwistStamped::ConstPtr& msg)
 {
@@ -281,7 +325,7 @@ int main(int argc, char** argv)
     Nullspace nullspace(mavNum);
     nullspace.setID(ID);
 
-    CMD cmd(nh, ID);
+    // CMD cmd(nh, ID);
 
     ros::Rate rate(30);
     
