@@ -64,10 +64,10 @@ int main(int argc, char **argv)
 
     //get init desired_pose
     ROS_INFO("wait for initial pose ");
-    while(ros::ok() && !init){
-    	ros::spinOnce();
-        rate.sleep();
-    };
+    // while(ros::ok() && !init){
+    // 	ros::spinOnce();
+    //     rate.sleep();
+    // };
     desired_pose = initial_pose; 
     desired_pose.pose.position.z+= 0.5;
      tf::Quaternion initial_Q(
@@ -143,7 +143,7 @@ int main(int argc, char **argv)
         }
         //input desired position and measurement, may plus feedforward velocity
         //output control input vs
-        desired_pose.pose.orientation = tf::createQuaternionMsgFromYaw(desired_yaw);
+        // desired_pose.pose.orientation = tf::createQuaternionMsgFromYaw(desired_yaw);
         desired_pose.header.stamp = ros::Time::now();
 
         desired_pos_pub.publish(desired_pose);

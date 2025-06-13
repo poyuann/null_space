@@ -248,7 +248,7 @@ int main(int argc, char **argv)
 	std_msgs::Int32 takeoff_msg;
 	takeoff_msg.data = takeoff_all_drone;
 	uav_start_pub.publish(start_msg);
-    leader_pose_pub.publish(leader_pose);
+    // leader_pose_pub.publish(leader_pose);
     leader_vel_pub.publish(leader_vel);
     uav_takeoff_pub.publish(takeoff_msg);
     ros::spinOnce();
