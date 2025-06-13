@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(Nullspace_control)
+project(nullspace_control)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -18,7 +18,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package(Eigen3 REQUIRED)
-#find_package(OsqpEigen REQUIRED)
+find_package(OsqpEigen REQUIRED)
+find_package(PythonLibs)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -124,6 +125,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
   include
+  ${PYTHON_INCLUDE_DIR}
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
 )
@@ -136,6 +138,15 @@ target_link_libraries(Nullspace
 target_include_directories(Nullspace PRIVATE
   include/${PROJECT_NAME}/ 
 )
+# MAV.h
+add_library(MAV
+  src/Mav.cpp
+)
+target_link_libraries(MAV 
+ ${catkin_LIBRARIES} )
+target_include_directories(MAV PRIVATE
+  include/${PROJECT_NAME}/ 
+)
 
 ######################### node ######################
 
@@ -146,9 +157,37 @@ add_executable(nullspace_ctrl
 target_link_libraries(nullspace_ctrl 
   ${catkin_LIBRARIES}
   Nullspace
+  MAV
   )
 target_include_directories(nullspace_ctrl PRIVATE
   include/${PROJECT_NAME}/)
+
+#velocity_cbf_generator
+add_executable(velocity_cbf_generator 
+	node/velocity_cbf.cpp 
+	src/getch.cpp )
+target_link_libraries(velocity_cbf_generator 
+	${catkin_LIBRARIES} 
+	OsqpEigen::OsqpEigen )
+target_include_directories(velocity_cbf_generator PRIVATE
+	include/${PROJECT_NAME}/ )
+
+#		leader_pose
+add_executable(leader_pose node/leader_pose_node.cpp
+	src/getch.cpp)
+target_link_libraries(leader_pose
+	${catkin_LIBRARIES} )
+target_include_directories(leader_pose PRIVATE
+	include/${PROJECT_NAME}/ )
+
+#		keyboard_panel
+add_executable(keyboard_panel 
+	node/keyboard_panel_node.cpp
+    src/getch.cpp)
+target_link_libraries(keyboard_panel
+	${catkin_LIBRARIES} )
+target_include_directories(keyboard_panel PRIVATE
+	include/${PROJECT_NAME}/ )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}

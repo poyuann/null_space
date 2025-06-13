@@ -1,5 +1,6 @@
 #include <cmath>
-
+#include <iostream>
+#include <queue>
 #include <ros/ros.h>
 #include "ros/param.h"
 #include <geometry_msgs/PoseStamped.h>
@@ -13,104 +14,9 @@
 #include <mavros_msgs/Mavlink.h>
 #include <Nullspace_control/desire.h>
 
+
 #include "Nullspace.h"
 
-class CMD
-{
-    private:
-        bool arm_cmd;
-        int mode_cmd;
-        int ID;
-        int curr_mode;
-        string offb_curr_mode;
-
-        ros::NodeHandle nh;
-        ros::ServiceClient arming_client;
-        ros::ServiceClient set_mode_client;
-        ros::ServiceClient takeoff_client;
-    public:
-        bool vision_tracking = false;
-
-        CMD(ros::NodeHandle &nh_, int id)
-        {
-            nh = nh_;
-            ID = id;
-            offb_curr_mode = "";
-
-            arming_client = nh.serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming");
-            set_mode_client = nh.serviceClient<mavros_msgs::SetMode>("mavros/set_mode");
-            takeoff_client = nh.serviceClient<mavros_msgs::CommandTOL>("mavros/cmd/takeoff");
-        }
-        ~CMD(){}
-        ros::Subscriber arm_cmd_sub = nh.subscribe<std_msgs::Bool>("/formation/all_uav_arm", 5, &CMD::arm_cmd_cb, this);
-        ros::Subscriber mode_cmd_sub = nh.subscribe<std_msgs::Int32>("/formation/all_uav_mode", 5, &CMD::mode_cmd_cb, this);
-        void arm_cmd_cb(const std_msgs::Bool::ConstPtr& msg)
-        {
-            arm_cmd = msg->data;
-            setArm(arm_cmd);
-        }
-        void mode_cmd_cb(const std_msgs::Int32::ConstPtr& msg)
-        {
-            mode_cmd = msg->data;
-            setMode(mode_cmd);
-        }
-        void setArm(bool arm_CMD)
-        {
-            mavros_msgs::CommandBool arm_cmd;
-            arm_cmd.request.value = arm_CMD;
-            if( arming_client.call(arm_cmd) && arm_cmd.response.success) 
-                ROS_INFO("UAV_%i armed switch successfully", ID);
-            else
-                ROS_INFO("UAV_%i failed to arm", ID);
-        }
-        void setMode(int mode_CMD)
-        {
-            mavros_msgs::SetMode offb_set_mode;
-            switch (mode_CMD)
-            {
-            case 0: 
-                offb_set_mode.request.custom_mode = "STABILIZED";
-                break;
-            case 1: 
-                offb_set_mode.request.custom_mode = "AUTO.TAKEOFF";
-                break;
-            case 2: 
-                offb_set_mode.request.custom_mode = "AUTO.LAND";
-                break;
-            case 3:
-                offb_set_mode.request.custom_mode = "OFFBOARD";
-                break;
-            case 5:
-                if(!vision_tracking)
-                {
-                    ROS_INFO("Tracking by vision");
-                    vision_tracking = true;
-                }
-                else
-                {
-                    ROS_INFO("Stop vision tracking");
-                    vision_tracking = false;
-                }
-                break;
-            
-            default:
-                break;
-            }
-            if(offb_set_mode.request.custom_mode != offb_curr_mode)
-            {
-                if(set_mode_client.call(offb_set_mode) && offb_set_mode.response.mode_sent)
-                {
-                    ROS_INFO("UAV_%i mode switched to %s", ID, offb_set_mode.request.custom_mode.c_str());
-                    offb_curr_mode = offb_set_mode.request.custom_mode;
-                    if(offb_set_mode.request.custom_mode == "AUTO.TAKEOFF")
-                        sleep(5);
-                }
-                else
-                    ROS_INFO("UAV_%i failed to switch offb_mode", ID);
-            }
-        }
-        int mode_CMD(){return mode_cmd;}
-};
 
 
 bool init = false;
@@ -124,104 +30,7 @@ geometry_msgs::TwistStamped leader_vel;
 
 int start_all_drone = 0;
 
-struct MAV_eigen
-{
-	Eigen::Vector3d r;
-    Eigen::Vector3d r_c;
-	Eigen::Vector3d v;
-	Eigen::Vector3d a_imu;
-	Eigen::Vector3d omega_c;
-	Eigen::Matrix3d R_w2b;
-    Eigen::Quaterniond q;
-};
 
-class MAV
-{
-private:
-    geometry_msgs::PoseStamped MAV_pose;
-    ros::Subscriber pose_sub;
-    queue<geometry_msgs::PoseStamped> pose_queue;
-    int id;
-    double roll;
-    double pitch;
-    double yaw;
-
-
-public:
-    MAV(ros::NodeHandle nh, string subTopic, int ID);
-    void pose_cb(const geometry_msgs::PoseStamped::ConstPtr& msg);
-    geometry_msgs::PoseStamped getPose();
-    double getYaw();
-    static int UAV_ID;
-    static int delay_step;    
-    bool gotPose;
-};
-
-int MAV::UAV_ID = 0;
-int MAV::delay_step = 0;
-
-MAV::MAV(ros::NodeHandle nh, string subTopic, int ID)
-{
-    pose_sub = nh.subscribe<geometry_msgs::PoseStamped>(subTopic, 10, &MAV::pose_cb, this);
-    id = ID;
-    gotPose = false;
-}
-
-void MAV::pose_cb(const geometry_msgs::PoseStamped::ConstPtr& msg)
-{
-	if(!gotPose)
-		gotPose = true;
-
-    if(id != UAV_ID)
-    {
-	pose_queue.push(*msg);
-	if(pose_queue.size() >= delay_step)
-	{
-	    MAV_pose = pose_queue.front();
-	    pose_queue = queue<geometry_msgs::PoseStamped>();
-	}
-    }
-    else
-	   MAV_pose = *msg;
-
-    tf::Quaternion Q(
-        MAV_pose.pose.orientation.x,
-        MAV_pose.pose.orientation.y,
-        MAV_pose.pose.orientation.z,
-        MAV_pose.pose.orientation.w);
-    tf::Matrix3x3(Q).getRPY(roll,pitch,yaw);
-}
-MAV_eigen mavMsg2Eigen(MAV Mav)
-{
-	MAV_eigen Mav_eigen;
-    // std::cout << Mav.getPose().pose << std::endl;
-	Mav_eigen.r(0) = Mav.getPose().pose.position.x;
-	Mav_eigen.r(1) = Mav.getPose().pose.position.y;
-	Mav_eigen.r(2) = Mav.getPose().pose.position.z;
-	Mav_eigen.v(0) = Mav.getVel().twist.linear.x;
-	Mav_eigen.v(1) = Mav.getVel().twist.linear.y;
-	Mav_eigen.v(2) = Mav.getVel().twist.linear.z;
-	Mav_eigen.a_imu(0) = Mav.getAcc().x;
-	Mav_eigen.a_imu(1) = Mav.getAcc().y;
-	Mav_eigen.a_imu(2) = Mav.getAcc().z;
-	
-	Mav_eigen.omega_c(0) = Mav.getVel().twist.angular.x;
-	Mav_eigen.omega_c(1) = Mav.getVel().twist.angular.y;
-	Mav_eigen.omega_c(2) = Mav.getVel().twist.angular.z;
-	Mav_eigen.R_w2b = Eigen::Quaterniond(
-		Mav.getPose().pose.orientation.w,
-		Mav.getPose().pose.orientation.x,
-		Mav.getPose().pose.orientation.y,
-		Mav.getPose().pose.orientation.z
-	).toRotationMatrix().inverse();
-	Mav_eigen.q.w() = Mav.getPose().pose.orientation.w;
-	Mav_eigen.q.x() = Mav.getPose().pose.orientation.x;
-	Mav_eigen.q.y() = Mav.getPose().pose.orientation.y;
-	Mav_eigen.q.z() = Mav.getPose().pose.orientation.z;
-    
-    Mav_eigen.r_c = Mav_eigen.r + Mav_eigen.R_w2b*Mav.getCamera().t_B2C();
-	return Mav_eigen;
-}
 
 geometry_msgs::PoseStamped MAV::getPose(){return MAV_pose;}
 double MAV::getYaw(){return yaw;}
@@ -303,9 +112,15 @@ int main(int argc, char** argv)
     //             MAV(nh, vehicle, 1 ,0) ,
     //             MAV(nh, vehicle, 2 ,0),
     //             MAV(nh, vehicle, 3 ,0)};
-    MAV mav[5] = {MAV(nh, "/leader_pose", 0),
-                    MAV(nh, "/MAV1/mavros/local_position/pose_initialized", 1),
-                    MAV(nh, "/MAV2/mavros/local_position/pose_initialized", 2),
+    // MAV mavs[5] = {MAV(nh, "/leader_pose", 0),
+    //                 MAV(nh, "/MAV1/mavros/local_position/pose_initialized", 1),
+    //                 MAV(nh, "/MAV2/mavros/local_position/pose_initialized", 2),
+    //             MAV(nh, "/MAV3/mavros/local_position/pose_initialized", 3),
+    //             MAV(nh, "/MAV4/mavros/local_position/pose_initialized", 4)};
+
+    MAV mavs[5] = {MAV(nh, "/leader_pose", 0),
+                MAV(nh, "/MAV1/mavros/local_position/pose_initialized", 1),
+                MAV(nh, "/MAV2/mavros/local_position/pose_initialized", 2),
                 MAV(nh, "/MAV3/mavros/local_position/pose_initialized", 3),
                 MAV(nh, "/MAV4/mavros/local_position/pose_initialized", 4)};
     int mavNum = 3;
@@ -329,12 +144,12 @@ int main(int argc, char** argv)
 
     ros::Rate rate(30);
     
-    while(ros::ok())
-    {
-        if (!mavs[ID].getState().connected)
-            break;
-        printf("wait for UAV_%d FCU connect ...\n" ,ID);
-    }
+    // while(ros::ok())
+    // {
+    //     if (!mavs[ID].getState().connected)
+    //         break;
+    //     printf("wait for UAV_%d FCU connect ...\n" ,ID);
+    // }
     for(int i=0; i < 30; i++)
     {
         rate.sleep();

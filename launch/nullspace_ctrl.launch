@@ -4,15 +4,15 @@
         <arg name="vehicle" default="typhoon_h480"/>
         <param name="param1" value="typhoon_h480"/>
         <group ns="$(arg vehicle)1">
-                <node name="nullspace_ctrl" pkg="Nullspace_control" type="nullspace_ctrl" ></node>
+                <node name="nullspace_ctrl" pkg="nullspace_control" type="nullspace_ctrl" ></node>
                 <param name="mav_id" value="1" />
         </group>
         <group ns="$(arg vehicle)2">
-                <node name="nullspace_ctrl" pkg="Nullspace_control" type="nullspace_ctrl"></node>
+                <node name="nullspace_ctrl" pkg="nullspace_control" type="nullspace_ctrl"></node>
                 <param name="mav_id" value="2" /> 
         </group>
         <group ns="$(arg vehicle)3">
-                <node name="nullspace_ctrl" pkg="Nullspace_control" type="nullspace_ctrl" output="screen"></node>
+                <node name="nullspace_ctrl" pkg="nullspace_control" type="nullspace_ctrl" output="screen"></node>
                 <param name="mav_id" value="3" /> 
         </group>
 </launch>
