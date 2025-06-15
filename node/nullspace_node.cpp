@@ -121,7 +121,7 @@ int main(int argc, char** argv)
     MAV mavs[5] = {MAV(nh, "/leader_pose", 0),
                 MAV(nh, "/MAV1/mavros/local_position/pose_initialized", 1),
                 MAV(nh, "/MAV2/mavros/local_position/pose_initialized", 2),
-                MAV(nh, "/MAV3/mavros/local_position/pose_initialized", 3),
+                MAV(nh, "/MAV6/mavros/local_position/pose_initialized", 3),
                 MAV(nh, "/MAV4/mavros/local_position/pose_initialized", 4)};
     int mavNum = 3;
     std::vector<MAV_eigen> Mavs_eigen(mavNum+1);

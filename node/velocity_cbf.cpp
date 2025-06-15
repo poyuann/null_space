@@ -331,7 +331,7 @@ int main(int argc, char **argv)
     CBF_object cbO[5] = {CBF_object(nh, "/leader_pose",obstacle_SafeDistance, obstacle_Gamma, 0),
                          CBF_object(nh, "/MAV1/mavros/local_position/pose_initialized", MAV_SafeDistance, MAV_Gamma, 1),
                          CBF_object(nh, "/MAV2/mavros/local_position/pose_initialized", MAV_SafeDistance, MAV_Gamma, 2),
-	    		 CBF_object(nh, "/MAV3/mavros/local_position/pose_initialized", MAV_SafeDistance, MAV_Gamma, 3),
+                         CBF_object(nh, "/MAV3/mavros/local_position/pose_initialized", MAV_SafeDistance, MAV_Gamma, 3),
                          CBF_object(nh, "/MAV6/mavros/local_position/pose_initialized", MAV_SafeDistance, MAV_Gamma, 4)};
 
 	
