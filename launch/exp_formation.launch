@@ -1,6 +1,6 @@
 <launch>
-    <arg name="fcu_url" default="/dev/ttyUSB0:230400"/>
-    <arg name="gcs_url" default="udp://@192.168.86.33"/>
+    <arg name="fcu_url" default="/dev/ttyACM0:230400"/>
+    <arg name="gcs_url" default="udp://@192.168.50.50"/>
     <arg name="SYS_ID" default="1"/>
 
     <group ns="MAV$(arg SYS_ID)">
@@ -23,6 +23,7 @@
             <arg name="tgt_system" value="$(arg SYS_ID)"/>
         </include> 
         <node name="gps_init_py" pkg="nullspace_control" type="gps_init.py" output="screen"></node>
+        <param name="mav_id" value="1" />
         <node name="nullspace_ctrl" pkg="nullspace_control" type="nullspace_ctrl" output="screen"></node>
         <node name="velocity_cbf_generator" pkg="nullspace_control" type="velocity_cbf_generator" output="screen">
             <rosparam subst_value="true">
