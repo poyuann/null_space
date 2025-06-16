@@ -442,9 +442,9 @@ int main(int argc, char **argv)
         }
         //ROS_INFO("setpoint: %.2f, %.2f, %.2f, %.2f", desired_pose.pose.position.x, desired_pose.pose.position.y, desired_pose.pose.position.z, desired_yaw/M_PI*180);
         //follow desired_pose
-        if(use_input_s == "position"){
-            follow(desired_pose,desired_yaw, &desired_vel_raw, host_mocap);
-        }
+        // if(use_input_s == "position"){
+        //     follow(desired_pose,desired_yaw, &desired_vel_raw, host_mocap);
+        // }
         
         //avoid collicsion
         //ROS_INFO("origin input:vx: %f vy: %f \n",desired_vel.twist.linear.x,desired_vel.twist.linear.y); 
@@ -461,8 +461,8 @@ int main(int argc, char **argv)
             desired_vel = desired_vel_raw;
         }
 	
-	desired_yaw = 0; //atan2(cbO[0].getPose().pose.position.y-host_mocap.pose.position.y, cbO[0].getPose().pose.position.x-host_mocap.pose.position.x);
-	follow_yaw(desired_vel, yaw, desired_yaw);
+        desired_yaw = 0; //atan2(cbO[0].getPose().pose.position.y-host_mocap.pose.position.y, cbO[0].getPose().pose.position.x-host_mocap.pose.position.x);
+        follow_yaw(desired_vel, yaw, desired_yaw);
         
         local_vel_pub.publish(desired_vel);
 

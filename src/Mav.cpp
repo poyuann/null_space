@@ -5,6 +5,7 @@ MAV::MAV(ros::NodeHandle nh, string subTopic, int ID)
     pose_sub = nh.subscribe<geometry_msgs::PoseStamped>(subTopic, 10, &MAV::pose_cb, this);
     id = ID;
     gotPose = false;
+    delay_step = 0;
 }
 MAV::~MAV(){};
 
