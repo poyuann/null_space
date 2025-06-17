@@ -306,7 +306,7 @@ int main(int argc, char **argv)
     std::cout<< use_input_s << "\n";
     //    subscriber    //
     ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>("mavros/state", 100, state_cb);
-    ros::Subscriber host_sub = nh.subscribe<geometry_msgs::PoseStamped>("mavros/local_position/pose_initialized", 10, host_pose_cb);
+    ros::Subscriber host_sub = nh.subscribe<geometry_msgs::PoseStamped>("mavros/local_position/pose", 10, host_pose_cb);
 
     
     ros::Subscriber desired_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("desired_pose", 10, desired_pose_cb);
@@ -328,10 +328,10 @@ int main(int argc, char **argv)
     ros::param::get("MAV_gamma", MAV_Gamma);
     ros::param::get("MAV_safe_D", MAV_SafeDistance);
 
-    CBF_object cbO[5] = {CBF_object(nh, "/leader_pose",obstacle_SafeDistance, obstacle_Gamma, 0),
-                         CBF_object(nh, "/MAV1/mavros/local_position/pose_initialized", MAV_SafeDistance, MAV_Gamma, 1),
-                         CBF_object(nh, "/MAV2/mavros/local_position/pose_initialized", MAV_SafeDistance, MAV_Gamma, 2),
-                         CBF_object(nh, "/MAV3/mavros/local_position/pose_initialized", MAV_SafeDistance, MAV_Gamma, 3),
+    CBF_object cbO[4] = {
+                         CBF_object(nh, "/typhoon_h4801/mavros/local_position/pose_initialized", MAV_SafeDistance, MAV_Gamma, 1),
+                         CBF_object(nh, "/typhoon_h4802/mavros/local_position/pose_initialized", MAV_SafeDistance, MAV_Gamma, 2),
+                         CBF_object(nh, "/typhoon_h4803/mavros/local_position/pose_initialized", MAV_SafeDistance, MAV_Gamma, 3),
                          CBF_object(nh, "/MAV6/mavros/local_position/pose_initialized", MAV_SafeDistance, MAV_Gamma, 4)};
 
 	
@@ -365,14 +365,14 @@ int main(int argc, char **argv)
     ROS_INFO("FCU connected");
 
     ROS_INFO("Wait for UAV all start signal");
-    while (ros::ok()) {
-        if(takeoff_all_drone == 1){
-            break;
-        }
-        ros::spinOnce();
-        rate.sleep();
-        ROS_INFO("Wait for UAV all takeoff signal");
-    }
+    // while (ros::ok()) {
+    //     if(takeoff_all_drone == 1){
+    //         break;
+    //     }
+    //     ros::spinOnce();
+    //     rate.sleep();
+    //     ROS_INFO("Wait for UAV all takeoff signal");
+    // }
     ROS_INFO("get UAV all takeoff signal");
 
     
@@ -383,32 +383,32 @@ int main(int argc, char **argv)
     }
     
     mavros_msgs::SetMode offb_set_mode;
-    offb_set_mode.request.custom_mode = "GUIDED";
+    offb_set_mode.request.custom_mode = "OFFBOARD";
 
     mavros_msgs::CommandBool arm_cmd;
     arm_cmd.request.value = true;
     ros::Time last_request = ros::Time::now();
     
-    if( set_mode_client.call(offb_set_mode) && offb_set_mode.response.mode_sent) {
-        ROS_INFO("GUIDED enabled");
-    }
+    // if( set_mode_client.call(offb_set_mode) && offb_set_mode.response.mode_sent) {
+    //     ROS_INFO("GUIDED enabled");
+    // }
 
-    if( arming_client.call(arm_cmd) && arm_cmd.response.success) {
-        ROS_INFO("Vehicle armed");
-    }
+    // if( arming_client.call(arm_cmd) && arm_cmd.response.success) {
+    //     ROS_INFO("Vehicle armed");
+    // }
 
-    ros::ServiceClient takeoff_cl = nh.serviceClient<mavros_msgs::CommandTOL>("mavros/cmd/takeoff");
-    mavros_msgs::CommandTOL srv_takeoff;
-    srv_takeoff.request.altitude = 8;
-    if(takeoff_cl.call(srv_takeoff))
-    {
-        ROS_INFO("srv_takeoff send success %d", srv_takeoff.response.success);
-    }
-    else
-    {
-        ROS_ERROR("Takeoff failed");
-	return 0;
-    }
+    // ros::ServiceClient takeoff_cl = nh.serviceClient<mavros_msgs::CommandTOL>("mavros/cmd/takeoff");
+    // mavros_msgs::CommandTOL srv_takeoff;
+    // srv_takeoff.request.altitude = 8;
+    // if(takeoff_cl.call(srv_takeoff))
+    // {
+    //     ROS_INFO("srv_takeoff send success %d", srv_takeoff.response.success);
+    // }
+    // else
+    // {
+    //     ROS_ERROR("Takeoff failed");
+	// return 0;
+    // }
 	
     sleep(10);
 
@@ -423,7 +423,7 @@ int main(int argc, char **argv)
     ROS_INFO("get UAV all start signal");
 
     while (ros::ok()) {
-        if (current_state.mode != "GUIDED" &&
+        if (current_state.mode != "OFFBOARD" &&
                 (ros::Time::now() - last_request > ros::Duration(2.0))) 
         {
             if( set_mode_client.call(offb_set_mode) &&
@@ -442,14 +442,14 @@ int main(int argc, char **argv)
         }
         //ROS_INFO("setpoint: %.2f, %.2f, %.2f, %.2f", desired_pose.pose.position.x, desired_pose.pose.position.y, desired_pose.pose.position.z, desired_yaw/M_PI*180);
         //follow desired_pose
-        if(use_input_s == "position"){
-            follow(desired_pose,desired_yaw, &desired_vel_raw, host_mocap);
-        }
+        // if(use_input_s == "position"){
+            // follow(desired_pose,desired_yaw, &desired_vel_raw, host_mocap);
+        // }
         
         //avoid collicsion
-        //ROS_INFO("origin input:vx: %f vy: %f \n",desired_vel.twist.linear.x,desired_vel.twist.linear.y); 
+        ROS_INFO("origin input:vx: %f vy: %f \n",desired_vel.twist.linear.x,desired_vel.twist.linear.y); 
          
-        //is_obstacle_exit
+        // is_obstacle_exit
         if(( ros::Time::now() - cbO[0].getPose().header.stamp)<ros::Duration(0.5)){
             if(velocity_cbf( desired_vel_raw , &desired_vel, cbO)!=0){
                 desired_vel = desired_vel_raw;
@@ -460,6 +460,7 @@ int main(int argc, char **argv)
         else{
             desired_vel = desired_vel_raw;
         }
+            // desired_vel = desired_vel_raw;
 	
 	desired_yaw = 0; //atan2(cbO[0].getPose().pose.position.y-host_mocap.pose.position.y, cbO[0].getPose().pose.position.x-host_mocap.pose.position.x);
 	follow_yaw(desired_vel, yaw, desired_yaw);

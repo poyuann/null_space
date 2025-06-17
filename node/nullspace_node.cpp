@@ -118,11 +118,11 @@ int main(int argc, char** argv)
     //             MAV(nh, "/MAV3/mavros/local_position/pose_initialized", 3),
     //             MAV(nh, "/MAV4/mavros/local_position/pose_initialized", 4)};
 
-    MAV mavs[5] = {MAV(nh, "/leader_pose", 0),
-                MAV(nh, "/MAV1/mavros/local_position/pose_initialized", 1),
-                MAV(nh, "/MAV2/mavros/local_position/pose_initialized", 2),
-                MAV(nh, "/MAV6/mavros/local_position/pose_initialized", 3),
-                MAV(nh, "/MAV4/mavros/local_position/pose_initialized", 4)};
+    MAV mavs[4] = {MAV(nh, "/leader_pose", 0),
+                MAV(nh, "/typhoon_h4801/mavros/local_position/pose_initialized", 1),
+                MAV(nh, "/typhoon_h4802/mavros/local_position/pose_initialized", 2),
+                MAV(nh, "/typhoon_h4803/mavros/local_position/pose_initialized", 3)};
+                // MAV(nh, "/MAV4/mavros/local_position/pose_initialized", 4)};
     int mavNum = 3;
     std::vector<MAV_eigen> Mavs_eigen(mavNum+1);
     Eigen::VectorXd q_d;
@@ -131,8 +131,8 @@ int main(int argc, char** argv)
     q_d(1) = 0; // Initial position of the leader
     q_d(2) = 10;  // Initial position of the leader
     q_d(3) = M_PI/ 3;  // empty
-    q_d(4) = 6;  // Initial distance between MAV1 and MAV3
-    q_d(5) = 6;  // Initial distance between MAV1 and MAV2
+    q_d(4) = 8;  // Initial distance between MAV1 and MAV3
+    q_d(5) = 8;  // Initial distance between MAV1 and MAV2
     q_d(6) = M_PI/ 3;  // Initial angle between MAV1 and MAV2
     q_d(7) = 0;  // Initial angle between MAV1 and MAV3 z
     q_d(8) = 0 ; // Initial angle between MAV2 and MAV3 z
@@ -165,6 +165,10 @@ int main(int argc, char** argv)
     {
         for(int i=0; i<mavNum +1; i++)
             Mavs_eigen[i] = mavMsg2Eigen(mavs[i]);
+        std::cout << "MAVs_eigen leader: " << Mavs_eigen[0].r.transpose() << "\n";
+        std::cout << "MAVs_eigen MAV1: " << Mavs_eigen[1].r.transpose() << "\n";
+        std::cout << "MAVs_eigen MAV2: " << Mavs_eigen[2].r.transpose() << "\n";
+        std::cout << "MAVs_eigen MAV3: " << Mavs_eigen[3].r.transpose() << "\n";
         q_d.segment(0,3) = Mavs_eigen[0].r.segment(0,3);
         nullspace.set_q_d(q_d);
         nullspace.setCurr_Pose_Vel(Mavs_eigen);
@@ -173,7 +177,7 @@ int main(int argc, char** argv)
         // self_vel = nullspace.center_nullspace();
         self_vel = nullspace.computeVel();
         q_test = nullspace.get_q_d_err();
-
+        std::cout << "q_d_err: " << q_test.transpose() << "\n";
         vel_msg.header.stamp = ros::Time::now();
         // vel_msg.twist.linear.x = mavs_vel(mavNum* (ID-1));
         // vel_msg.twist.linear.y = mavs_vel(mavNum* (ID-1)+ 1);
@@ -191,6 +195,7 @@ int main(int argc, char** argv)
         // q_msg.GT_twist.linear.z = self_vel(2);
         // q_pub.publish(q_msg);
         desired_vel_pub.publish(vel_msg);
+        
         std::cout << vel_msg.twist.linear <<"\n\n";
         rate.sleep();
         ros::spinOnce();

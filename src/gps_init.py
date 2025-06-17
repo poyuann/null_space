@@ -56,7 +56,7 @@ if __name__ == '__main__':
 	
         rospy.init_node('gps_init_py')
         pose_init_sub = rospy.Subscriber('/uav_init', Int32, pose_init_cb)
-        gps_origin_sub = rospy.Subscriber('/MAV6/mavros/global_position/global', NavSatFix, gps_origin_cb)
+        gps_origin_sub = rospy.Subscriber('/typhoon_h4803/mavros/global_position/global', NavSatFix, gps_origin_cb)
         gps_self_sub = rospy.Subscriber('mavros/global_position/global', NavSatFix, gps_self_cb)
         gps_pose_sub = rospy.Subscriber('mavros/local_position/pose', PoseStamped, gps_pose_cb)
         leader_pose_sub = rospy.Subscriber('/leader_pose', PoseStamped, time_cb)
