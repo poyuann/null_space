@@ -450,16 +450,17 @@ int main(int argc, char **argv)
         //ROS_INFO("origin input:vx: %f vy: %f \n",desired_vel.twist.linear.x,desired_vel.twist.linear.y); 
          
         //is_obstacle_exit
-        if(( ros::Time::now() - cbO[0].getPose().header.stamp)<ros::Duration(0.5)){
-            if(velocity_cbf( desired_vel_raw , &desired_vel, cbO)!=0){
-                desired_vel = desired_vel_raw;
-            }
-            //  ROS_INFO("cbf input:vx: %f vy: %f \n",desired_vel.twist.linear.x,desired_vel.twist.linear.y); 
+        // if(( ros::Time::now() - cbO[0].getPose().header.stamp)<ros::Duration(0.5)){
+        //     if(velocity_cbf( desired_vel_raw , &desired_vel, cbO)!=0){
+        //         desired_vel = desired_vel_raw;
+        //     }
+        //     //  ROS_INFO("cbf input:vx: %f vy: %f \n",desired_vel.twist.linear.x,desired_vel.twist.linear.y); 
 
-        }
-        else{
-            desired_vel = desired_vel_raw;
-        }
+        // }
+        // else{
+        //     desired_vel = desired_vel_raw;
+        // }
+        desired_vel = desired_vel_raw;
 	
         desired_yaw = 0; //atan2(cbO[0].getPose().pose.position.y-host_mocap.pose.position.y, cbO[0].getPose().pose.position.x-host_mocap.pose.position.x);
         follow_yaw(desired_vel, yaw, desired_yaw);
