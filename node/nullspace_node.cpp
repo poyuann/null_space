@@ -12,7 +12,7 @@
 #include <std_msgs/Int32.h>
 #include <std_msgs/Bool.h>
 #include <mavros_msgs/Mavlink.h>
-// #include <Nullspace_control/desire.h>
+#include <nullspace_control/desire.h>
 
 
 #include "Nullspace.h"
@@ -103,9 +103,9 @@ int main(int argc, char** argv)
     ros::param::get("mav_id", ID);
     
     geometry_msgs::TwistStamped vel_msg;
-    // Nullspace_control::desire q_msg;
+    nullspace_control::desire q_msg;
     // ros::Publisher vel_cmd_pub = nh.advertise<geometry_msgs::TwistStamped>("mavros/setpoint_velocity/cmd_vel", 10);
-    // ros::Publisher q_pub = nh.advertise<Nullspace_control::desire>("desire",10);
+    ros::Publisher q_pub = nh.advertise<nullspace_control::desire>("desire",10);
     ros::Publisher desired_vel_pub = nh.advertise<geometry_msgs::TwistStamped>("desired_velocity_raw", 100);
  
     // MAV mavs[]={MAV(nh, "target", 0 ,0),
@@ -189,11 +189,11 @@ int main(int argc, char** argv)
         // q_msg.header.stamp = ros::Time::now();
         // std::cout <<q_test<<"\n";
         std::vector<double> q_vec(q_test.data(),q_test.data() + q_test.size());
-        // q_msg.q = q_vec;
-        // q_msg.GT_twist.linear.x = self_vel(0);
-        // q_msg.GT_twist.linear.y = self_vel(1);
-        // q_msg.GT_twist.linear.z = self_vel(2);
-        // q_pub.publish(q_msg);
+        q_msg.q = q_vec;
+        q_msg.GT_twist.linear.x = self_vel(0);
+        q_msg.GT_twist.linear.y = self_vel(1);
+        q_msg.GT_twist.linear.z = self_vel(2);
+        q_pub.publish(q_msg);
         desired_vel_pub.publish(vel_msg);
         
         std::cout << vel_msg.twist.linear <<"\n\n";

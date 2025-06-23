@@ -11,7 +11,11 @@
                 <node name="nullspace_ctrl" pkg="nullspace_control" type="nullspace_ctrl"></node>
                 <param name="mav_id" value="2" /> 
         </group> -->
-        <group ns="$(arg vehicle)3">
+        <group ns="$(arg vehicle)3">    	
+        <param name="obs_safe_D" value="0"/>
+    	<param name="obs_gamma" value="0.1"/>
+        <param name="MAV_safe_D" value="6"/>
+        <param name="MAV_gamma" value="0.8"/>
                 <node name="nullspace_ctrl" pkg="nullspace_control" type="nullspace_ctrl" output="screen"></node>
         <node name="gps_init_py" pkg="nullspace_control" type="gps_init.py" output="screen"></node>
         <node name="velocity_cbf_generator" pkg="nullspace_control" type="velocity_cbf_generator" >

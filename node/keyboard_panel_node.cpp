@@ -91,10 +91,10 @@ int main(int argc, char **argv)
           
             switch (c) {
                 case 65:    // key up
-                    desired_pose.pose.position.z += 0.05;
+                    desired_pose.pose.position.z += 0.5;
                     break;
                 case 66:    // key down
-                    desired_pose.pose.position.z += -0.05;
+                    desired_pose.pose.position.z += -0.5;
                     break;
                 case 67:    // key CW(->)
                     desired_yaw -= 0.03;
@@ -105,16 +105,16 @@ int main(int argc, char **argv)
                     bound_yaw(&desired_yaw); 
                     break;
                 case 119:    // key foward(w)
-                    desired_pose.pose.position.y += 0.05;
+                    desired_pose.pose.position.y += 0.5;
                     break;
                 case 120:    // key back(x)
-                    desired_pose.pose.position.y -= 0.05;
+                    desired_pose.pose.position.y -= 0.5;
                     break;
                 case 97:    // key left(a)
-                    desired_pose.pose.position.x -= 0.05;
+                    desired_pose.pose.position.x -= 0.5;
                     break;
                 case 100:    // key right(d)
-                    desired_pose.pose.position.x += 0.05;
+                    desired_pose.pose.position.x += 0.5;
                     break;
                 case 114:    // key (r) re-init desired_pose to current pose
                 {
@@ -130,9 +130,9 @@ int main(int argc, char **argv)
                     bound_yaw(&desired_yaw);
                     break;
                 }
-                case 115:    // key origin(s)
+                case 108:    // key origin(l)
                 {
-                    desired_pose.pose.position.z = 0.5;
+                    desired_pose.pose.position.z = 10;
                     break;
                 }
                 case 63:

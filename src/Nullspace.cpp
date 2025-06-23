@@ -76,9 +76,12 @@ Eigen::VectorXd Nullspace::get_q_d_err()
 
     Eigen::VectorXd q_test;
     q_test.setZero(9);
-    q_test(0) = q_d(0) - ((Mavs_eigen[1].r(0)+ Mavs_eigen[2].r(0)+ Mavs_eigen[3].r(0))/3);
-    q_test(1) = q_d(1) - ((Mavs_eigen[1].r(1)+ Mavs_eigen[2].r(1)+ Mavs_eigen[3].r(1))/3);
-    q_test(2) = q_d(2) - ((Mavs_eigen[1].r(2)+ Mavs_eigen[2].r(2)+ Mavs_eigen[3].r(2))/3);
+    q_test(0) = q_d(0) ;//- ((Mavs_eigen[1].r(0)+ Mavs_eigen[2].r(0)+ Mavs_eigen[3].r(0))/3);
+    q_test(1) = q_d(1) ;//- ((Mavs_eigen[1].r(1)+ Mavs_eigen[2].r(1)+ Mavs_eigen[3].r(1))/3);
+    q_test(2) = q_d(2) ;//- ((Mavs_eigen[1].r(2)+ Mavs_eigen[2].r(2)+ Mavs_eigen[3].r(2))/3);
+    q_test(0) =  ((Mavs_eigen[1].r(0)+ Mavs_eigen[2].r(0)+ Mavs_eigen[3].r(0))/3);
+    q_test(1) =  ((Mavs_eigen[1].r(1)+ Mavs_eigen[2].r(1)+ Mavs_eigen[3].r(1))/3);
+    q_test(2) =  ((Mavs_eigen[1].r(2)+ Mavs_eigen[2].r(2)+ Mavs_eigen[3].r(2))/3);
     q_test(3) = bound_angle((q_d(3) - atan2(r32(1),r32(0))));
     q_test(4) = q_d(4) - r13.norm();
     q_test(5) = q_d(5) - r12.norm();
