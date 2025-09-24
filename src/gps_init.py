@@ -7,9 +7,9 @@ from std_msgs.msg import Int32
 import pymap3d as pm
 from mavros_msgs.srv import StreamRate
 
-latO = 0
-lonO = 0
-altO = 0
+latO = 24.787017
+lonO = 120.993474
+altO = 137.1850777382828
 
 lat = 0
 lon = 0

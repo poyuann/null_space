@@ -118,7 +118,7 @@ int main(int argc, char** argv)
     //             MAV(nh, "/MAV3/mavros/local_position/pose_initialized", 3),
     //             MAV(nh, "/MAV4/mavros/local_position/pose_initialized", 4)};
 
-    MAV mavs[5] = {MAV(nh, "/leader_pose", 0),
+    MAV mavs[4] = {MAV(nh, "/leader_pose", 0),
                 MAV(nh, "/MAV1/mavros/local_position/pose_initialized", 1),
                 MAV(nh, "/MAV2/mavros/local_position/pose_initialized", 2),
                 MAV(nh, "/MAV6/mavros/local_position/pose_initialized", 3)};
@@ -131,8 +131,8 @@ int main(int argc, char** argv)
     q_d(1) = 0; // Initial position of the leader
     q_d(2) = 10;  // Initial position of the leader
     q_d(3) = M_PI/ 3;  // empty
-    q_d(4) = 6;  // Initial distance between MAV1 and MAV3
-    q_d(5) = 6;  // Initial distance between MAV1 and MAV2
+    q_d(4) = 8;  // Initial distance between MAV1 and MAV3
+    q_d(5) = 8;  // Initial distance between MAV1 and MAV2
     q_d(6) = M_PI/ 3;  // Initial angle between MAV1 and MAV2
     q_d(7) = 0;  // Initial angle between MAV1 and MAV3 z
     q_d(8) = 0 ; // Initial angle between MAV2 and MAV3 z
