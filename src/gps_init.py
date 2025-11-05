@@ -9,7 +9,8 @@ from mavros_msgs.srv import StreamRate
 
 latO = 24.787017
 lonO = 120.993474
-altO = 137.1850777382828
+#lon0 = 120.9951098
+altO = 107.82237749982092
 
 lat = 0
 lon = 0
